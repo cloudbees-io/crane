@@ -1,0 +1,63 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Action test
+
+on:
+  push:
+    branches:
+    - '**'
+
+jobs:
+  test:
+    steps:
+    - name: Get source code
+      uses: cloudbees-io/checkout@v1
+
+    - id: dockerconfig
+      name: Configure container registry credentials
+      uses: cloudbees-io/configure-oci-credentials@v0
+      with:
+        registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
+        username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+
+    - id: actionrunmax
+      name: Run Action with all inputs specified
+      uses: cloudbees-io/crane@SDP-9839
+      with:
+        src: registry.saas-dev.beescloud.com/staging/ubuntu:src
+        destination: registry.saas-dev.beescloud.com/staging/ubuntu:dst
+        platform: linux/amd64
+        skip-image-validation: 'false'
+
+    - name: Test Action output maximum
+      uses: docker://alpine:3.18
+      run: |
+        set -euo pipefail
+
+        echo "IMAGE REF: $IMAGE_REF"
+        echo "IMAGE DIGEST: $IMAGE_DIGEST"
+        echo "$IMAGE_REF" | grep -q "$IMAGE_DIGEST"
+      env:
+        IMAGE_DIGEST: ${{ steps.actionrunmax.outputs.digest }}
+        IMAGE_REF: ${{ steps.actionrunmax.outputs.image }}
+
+    - id: actionrunrequired
+      name: Run Action with only required inputs specified
+      uses: cloudbees-io/crane@SDP-9839
+      with:
+        src: registry.saas-dev.beescloud.com/staging/ubuntu:src
+        destination: registry.saas-dev.beescloud.com/staging/ubuntu:dst
+
+    - name: Test Action output required inputs
+      uses: docker://alpine:3.18
+      run: |
+        set -euo pipefail
+
+        echo "IMAGE REF: $IMAGE_REF"
+        echo "IMAGE DIGEST: $IMAGE_DIGEST"
+        echo "$IMAGE_REF" | grep -q "$IMAGE_DIGEST"
+      env:
+        IMAGE_DIGEST: ${{ steps.actionrunmax.outputs.digest }}
+        IMAGE_REF: ${{ steps.actionrunmax.outputs.image }}
+
