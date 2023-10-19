@@ -48,8 +48,13 @@ runs:
           crane validate --remote ${{ inputs.destination }} --platform ${{ inputs.platform }}
         fi
 
+        echo "Getting image digest of source image ${{ inputs.src }}"
+        crane digest ${{ inputs.src }} --full-ref --platform ${{ inputs.platform }}
+
+        # Capture digest of destination image and also log to console
+        exec 5>&1
         echo "Getting image digest of destination image ${{ inputs.destination }}"
-        image=$(crane digest ${{ inputs.destination }} --full-ref --platform ${{ inputs.platform }})
+        image=$(crane digest ${{ inputs.destination }} --full-ref --platform ${{ inputs.platform }} | tee /dev/fd/5)
         digest=$(crane digest ${{ inputs.destination }} --platform ${{ inputs.platform }})
         printf %s "$digest" > $CLOUDBEES_OUTPUTS/digest
         printf %s "$image" > $CLOUDBEES_OUTPUTS/image
