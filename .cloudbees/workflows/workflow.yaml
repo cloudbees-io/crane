@@ -25,8 +25,8 @@ jobs:
       name: Run Action with all inputs specified
       uses: cloudbees-io/crane@SDP-9839
       with:
-        src: registry.saas-dev.beescloud.com/staging/ubuntu:src
-        destination: registry.saas-dev.beescloud.com/staging/ubuntu:dst-test-1
+        src: ubuntu:latest
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test-1
         platform: linux/amd64
         skip-image-validation: 'false'
 
@@ -46,8 +46,8 @@ jobs:
       name: Run Action with only required inputs specified
       uses: cloudbees-io/crane@SDP-9839
       with:
-        src: registry.saas-dev.beescloud.com/staging/ubuntu:src
-        destination: registry.saas-dev.beescloud.com/staging/ubuntu:dst-test-2
+        src: ubuntu:latest
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test-2
 
     - name: Test Action output required inputs
       uses: docker://alpine:3.18
