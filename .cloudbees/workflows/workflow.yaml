@@ -8,7 +8,10 @@ on:
     - '**'
 
 jobs:
-  test:
+  build:
+    outputs:
+      actionrunmax: ${{ steps.actionrunmax.outputs.digest }}
+      actionrunrequired: ${{ steps.actionrunrequired.outputs.digest }}
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
@@ -30,12 +33,6 @@ jobs:
         platform: linux/amd64
         skip-image-validation: 'false'
 
-    - name: Test Action output maximum
-      uses: docker://quay.io/skopeo/stable:v1.13.3
-      run: |
-        DIGEST="$(skopeo inspect --authfile $HOME/.docker/config.json docker://${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test --format='{{.Digest}}')"
-        [ "$DIGEST" = '${{ steps.actionrunmax.outputs.digest }}' ]
-
     - id: actionrunrequired
       name: Run Action with only required inputs specified
       uses: cloudbees-io/crane@SDP-9839
@@ -43,9 +40,36 @@ jobs:
         src: alpine:latest
         destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test
 
+  test:
+    needs:
+    - build
+    steps:
+    - id: dockerconfig
+      name: Configure container registry credentials
+      uses: cloudbees-io/configure-oci-credentials@v0
+      with:
+        registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
+        username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+
+    - name: Test Action output maximum
+      uses: docker://quay.io/skopeo/stable:v1.13.3
+      run: |
+        DIGEST="$(skopeo inspect --authfile $HOME/.docker/config.json docker://${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test --format='{{.Digest}}')"
+        [ "$DIGEST" = '${{ needs.build.outputs.actionrunmax }}' ]
+
+    - name: Test pulling the built image ubuntu:dst-test
+      uses: registry.saas-dev.beescloud.com/staging/ubuntu:dst-test
+      run: |
+        echo "Successfully ran on registry.saas-dev.beescloud.com/staging/ubuntu:dst-test"
+
     - name: Test Action output required inputs
       uses: docker://quay.io/skopeo/stable:v1.13.3
       run: |
         DIGEST="$(skopeo inspect --authfile $HOME/.docker/config.json docker://${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test --format='{{.Digest}}')"
-        [ "$DIGEST" = '${{ steps.actionrunrequired.outputs.digest }}' ]
+        [ "$DIGEST" = '${{ needs.build.outputs.actionrunrequired }}' ]
 
+    - name: Test pulling the built image alpine:dst-test
+      uses: registry.saas-dev.beescloud.com/staging/alpine:dst-test
+      run: |
+        echo "Successfully ran on registry.saas-dev.beescloud.com/staging/alpine:dst-test"
