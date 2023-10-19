@@ -59,7 +59,7 @@ jobs:
         [ "$DIGEST" = '${{ needs.build.outputs.actionrunmax }}' ]
 
     - name: Test pulling the built image ubuntu:dst-test
-      uses: registry.saas-dev.beescloud.com/staging/ubuntu:dst-test
+      uses: docker://registry.saas-dev.beescloud.com/staging/ubuntu:dst-test
       run: |
         echo "Successfully ran on registry.saas-dev.beescloud.com/staging/ubuntu:dst-test"
 
@@ -70,6 +70,6 @@ jobs:
         [ "$DIGEST" = '${{ needs.build.outputs.actionrunrequired }}' ]
 
     - name: Test pulling the built image alpine:dst-test
-      uses: registry.saas-dev.beescloud.com/staging/alpine:dst-test
+      uses: docker://registry.saas-dev.beescloud.com/staging/alpine:dst-test
       run: |
         echo "Successfully ran on registry.saas-dev.beescloud.com/staging/alpine:dst-test"
