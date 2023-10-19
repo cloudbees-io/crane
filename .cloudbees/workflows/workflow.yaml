@@ -47,5 +47,5 @@ jobs:
       uses: docker://quay.io/skopeo/stable:v1.13.3
       run: |
         DIGEST="$(skopeo inspect --authfile $HOME/.docker/config.json docker://${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test --format='{{.Digest}}')"
-        [ "$DIGEST" = '${{ steps.actionrunmax.outputs.digest }}' ]
+        [ "$DIGEST" = '${{ steps.actionrunrequired.outputs.digest }}' ]
 
