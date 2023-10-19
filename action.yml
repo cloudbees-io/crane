@@ -1,0 +1,64 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: action
+name: 'Crane copy images'
+description: 'Copy a remote image from src to dst while retaining the digest value'
+
+inputs:
+  src:
+    description: 'Source image'
+    required: true
+  destination:
+    description: 'Target image'
+    required: true
+  platform:
+    description: 'Specifies the platform in the form os/arch[/variant][:osversion] (e.g. linux/amd64)'
+    default: "all"
+  skip-image-validation:
+    description: 'Skip source and destination image validation'
+    default: "true"
+
+outputs:
+  digest:
+    value: ${{ steps.cranecopy.outputs.digest }}
+    description: Image digest of the destination image
+  image:
+    value: ${{ steps.cranecopy.outputs.image }}
+    description: |
+      Image reference of the destination image, including the image digest.
+
+runs:
+  using: composite
+  steps:
+    - id: cranecopy
+      name: Copy a remote image from a given source to a destination
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      run: |
+        set -euo pipefail
+
+        if [ "$SKIP_IMAGE_VALIDATION" == false ]; then
+          echo "Validating source image ${{ inputs.src }}"
+          crane validate --remote ${{ inputs.src }} --platform ${{ inputs.platform }}
+        fi
+
+        echo "Copying source image ${{ inputs.src }} to destination ${{ inputs.destination }}"
+        crane copy ${{ inputs.src }} ${{ inputs.destination }} --platform ${{ inputs.platform }}
+
+        if [ "$SKIP_IMAGE_VALIDATION" == false ]; then
+          echo "Validating destination image ${{ inputs.destination }}"
+          crane validate --remote ${{ inputs.destination }} --platform ${{ inputs.platform }}
+        fi
+
+        echo "Getting image digest of source image ${{ inputs.src }}"
+        crane digest ${{ inputs.src }} --full-ref --platform ${{ inputs.platform }}
+
+        # Capture digest of destination image and also log to console
+        exec 5>&1
+        echo "Getting image digest of destination image ${{ inputs.destination }}"
+        image=$(crane digest ${{ inputs.destination }} --full-ref --platform ${{ inputs.platform }} | tee /dev/fd/5)
+        digest=$(crane digest ${{ inputs.destination }} --platform ${{ inputs.platform }})
+        printf %s "$digest" > $CLOUDBEES_OUTPUTS/digest
+        printf %s "$image" > $CLOUDBEES_OUTPUTS/image
+
+      env:
+        SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
+        PLATFORM: ${{ inputs.platform }}

@@ -1,0 +1,56 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Action test
+
+on:
+  push:
+    branches:
+    - '**'
+
+jobs:
+  test:
+    steps:
+    - name: Get source code
+      uses: cloudbees-io/checkout@v1
+
+    - id: dockerconfig
+      name: Configure container registry credentials
+      uses: cloudbees-io/configure-oci-credentials@v0
+      with:
+        registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
+        username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+
+    - id: actionrunmax
+      name: Run Action with all inputs specified
+      uses: ./
+      with:
+        src: ubuntu:latest
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test
+        platform: linux/amd64
+        skip-image-validation: 'false'
+
+    - name: Test Action output maximum
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      run: |
+        SRC_DIGEST=$(crane digest ubuntu:latest --platform linux/amd64)
+        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test --platform linux/amd64)
+
+        [ "$DEST_DIGEST" = '${{ steps.actionrunmax.outputs.digest }}' ]
+        [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
+
+    - id: actionrunrequired
+      name: Run Action with only required inputs specified
+      uses: ./
+      with:
+        src: alpine:latest
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test
+
+    - name: Test Action output required inputs
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      run: |
+        SRC_DIGEST=$(crane digest alpine:latest --platform "all")
+        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test --platform "all")
+
+        [ "$DEST_DIGEST" = '${{ steps.actionrunrequired.outputs.digest }}' ]
+        [ "$SRC_DIGEST" = "$DEST_DIGEST" ]

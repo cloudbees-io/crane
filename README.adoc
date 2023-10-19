@@ -1,0 +1,48 @@
+== Cloudbees action for copying a remote image from a source to a destination using crane
+
+This action can be used to copy a remote image from a source to a destination using link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane] .
+
+=== Prerequisites
+
+Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the docker registry.
+
+The format of this JSON file is:
+
+`{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}` 
+
+where the `auth` field is base64 encoded.
+
+If your source and destination registries are different, then you need to include the credential for both registries in the config file.
+
+The format of the JSON file in that case would be:
+
+`{"auths": {
+        "<source registry>": {
+            "username": "<username>",
+            "password": "<password>",
+            "auth": "<username>:<password>"
+        },
+        "<destination registry>": {
+            "username": "<username>",
+            "password": "<password>",
+            "auth": "<username>:<password>"
+        }
+    }
+}`
+
+=== Usage
+
+[source,yaml]
+----
+- uses: cloudbees-io/crane@v1
+  with:
+    # The source image to copy (Required)
+    src: <source registry>/<image name>:<source image tag>
+    # The destination image (Required)
+    destination: <destination registry>/<image name>:<destination image tag>
+    # Specifies the platform in the form os/arch[/variant][:osversion]  (Optional)
+    platform: linux/amd64
+    # Skip source and destination image validation. Default: true (Optional)
+    skip-image-validation: 'false'
+      
+----
