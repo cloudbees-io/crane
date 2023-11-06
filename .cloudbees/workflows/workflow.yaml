@@ -54,3 +54,20 @@ jobs:
 
         [ "$DEST_DIGEST" = '${{ steps.actionrunrequired.outputs.digest }}' ]
         [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
+
+    - id: promotecharts
+      name: Run action to promote helm charts
+      uses: ./
+      with:
+        src: ghcr.io/nginxinc/charts/nginx-ingress:1.0.2
+        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/charts/nginx-ingress:1.0.2
+
+    - name: Test Action for promoting helm charts
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      run: |
+        set -x
+        SRC_DIGEST=$(crane digest ghcr.io/nginxinc/charts/nginx-ingress:1.0.2 --platform "all")
+        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/charts/nginx-ingress:1.0.2 --platform "all")
+
+        [ "$DEST_DIGEST" = '${{ steps.promotecharts.outputs.digest }}' ]
+        [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
