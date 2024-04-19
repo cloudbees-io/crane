@@ -7,26 +7,33 @@ on:
     branches:
     - '**'
 
+permissions:
+  id-token: write
+
 jobs:
   test:
     steps:
     - name: Get source code
       uses: cloudbees-io/checkout@v1
 
-    - id: dockerconfig
-      name: Configure container registry credentials
-      uses: cloudbees-io/configure-oci-credentials@v0
+    - id: aws-login
+      name: Login to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
       with:
-        registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
-        username: ${{ secrets.STAGING_DOCKER_USERNAME }}
-        password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.oidc_staging_iam_role }}
+        role-duration-seconds: "3600"
+    
+    - id: configure-ecr
+      name: Configure container registry for ECR
+      uses: cloudbees-io/configure-ecr-credentials@v1
 
     - id: actionrunmax
       name: Run Action with all inputs specified
       uses: ./
       with:
         src: ubuntu:latest
-        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test
+        destination: ${{ vars.staging_image_registry }}/ubuntu:dst-test
         platform: linux/amd64
         skip-image-validation: 'false'
 
@@ -34,7 +41,7 @@ jobs:
       uses: docker://gcr.io/go-containerregistry/crane:debug
       run: |
         SRC_DIGEST=$(crane digest ubuntu:latest --platform linux/amd64)
-        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/ubuntu:dst-test --platform linux/amd64)
+        DEST_DIGEST=$(crane digest ${{ vars.staging_image_registry }}/ubuntu:dst-test --platform linux/amd64)
 
         [ "$DEST_DIGEST" = '${{ steps.actionrunmax.outputs.digest }}' ]
         [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
@@ -44,13 +51,13 @@ jobs:
       uses: ./
       with:
         src: alpine:latest
-        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test
+        destination: ${{ vars.staging_image_registry }}/alpine:dst-test
 
     - name: Test Action output required inputs
       uses: docker://gcr.io/go-containerregistry/crane:debug
       run: |
         SRC_DIGEST=$(crane digest alpine:latest --platform "all")
-        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/alpine:dst-test --platform "all")
+        DEST_DIGEST=$(crane digest ${{ vars.staging_image_registry }}/alpine:dst-test --platform "all")
 
         [ "$DEST_DIGEST" = '${{ steps.actionrunrequired.outputs.digest }}' ]
         [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
@@ -60,14 +67,14 @@ jobs:
       uses: ./
       with:
         src: ghcr.io/nginxinc/charts/nginx-ingress:1.0.2
-        destination: ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/charts/nginx-ingress:1.0.2
+        destination: ${{ vars.staging_chart_registry }}/nginx-ingress:1.0.2
 
     - name: Test Action for promoting helm charts
       uses: docker://gcr.io/go-containerregistry/crane:debug
       run: |
         set -x
         SRC_DIGEST=$(crane digest ghcr.io/nginxinc/charts/nginx-ingress:1.0.2 --platform "all")
-        DEST_DIGEST=$(crane digest ${{ vars.STAGING_DOCKER_REGISTRY }}/staging/charts/nginx-ingress:1.0.2 --platform "all")
+        DEST_DIGEST=$(crane digest ${{ vars.staging_chart_registry }}/nginx-ingress:1.0.2 --platform "all")
 
         [ "$DEST_DIGEST" = '${{ steps.promotecharts.outputs.digest }}' ]
         [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
