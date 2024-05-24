@@ -6,74 +6,13 @@ Use this action to copy a remote image from a source to a destination with link:
 
 Before invoking the action, you must have a Docker config file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the Docker registry.
 
-Use either of the below examples to generate a Docker config file.
+Use either of the below actions to generate a Docker config file.
 
-Use link:https://github.com/cloudbees-io/configure-oci-credentials[the OCI credentials configuration action]:
+* link:https://github.com/cloudbees-io/configure-oci-credentials[The OCI credentials configuration action].
 
-In your YAML file, add:
+* link:https://github.com/cloudbees-io/configure-ecr-credentials[The ECR credentials configuration action], for authenticating to an AWS ECR registry. 
 
-[source,yaml]
-----
-
-      - id: dockerconfig
-        name: Configure container registry credentials
-        uses: cloudbees-io/configure-oci-credentials@v1
-        with:
-          registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
-          username: ${{ secrets.STAGING_DOCKER_USERNAME }}
-          password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
-
-----
-
-For authenticating to an AWS ECR registry, use link:https://github.com/cloudbees-io/configure-ecr-credentials[the ECR credentials configuration action]:
-
-In your YAML file, add:
-
-[source,yaml]
-----
-      - name: Log in to ECR
-        id: login-ecr
-        uses: cloudbees-io/configure-ecr-credentials@v1
-
-----
-
-The Docker config file must be formatted in JSON, as follows:
-
-[source,json,role="novalidate"]
-----
-{
-	"auths": {
-		"<registry host>": {
-			"username": "<username>",
-			"password": "<password>",
-			"auth": "<username>:<password>"
-		}
-	}
-}
-----
-
-If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry login action separately for those registries before invoking the crane action, as in the example below:
-
-[source,json,role="novalidate"]
-----
-{
-	"auths": {
-		"<registry host>": {
-			"username": "<username>",
-			"password": "<password>",
-			"auth": "<username>:<password>"
-		},
-		"<destination registry>": {
-			"username": "<username>",
-			"password": "<password>",
-			"auth": "<username>:<password>"
-		}
-	}
-}
-
-----
-
-NOTE: The `+"auth":"<username>:<password>"+` fields must be base64-encoded.
+NOTE: If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry authentication action separately for those registries before invoking the crane action.
 
 == Inputs
 
