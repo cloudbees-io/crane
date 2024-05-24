@@ -25,7 +25,7 @@ In your YAML file, add:
 
 ----
 
-Use link:https://github.com/cloudbees-io/configure-ecr-credentials[the ECR credentials configuration action]:
+For authenticating to an AWS ECR registry, use link:https://github.com/cloudbees-io/configure-ecr-credentials[the ECR credentials configuration action]:
 
 In your YAML file, add:
 
@@ -52,7 +52,7 @@ The Docker config file must be formatted in JSON, as follows:
 }
 ----
 
-If your source and destination registries are different, then you need to include the credential for both registries in the config file, as in the example below:
+If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry login action separately for those registries before invoking the crane action, as in the example below:
 
 [source,json,role="novalidate"]
 ----
