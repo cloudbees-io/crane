@@ -78,7 +78,7 @@ In your YAML file, add:
 
 [source,yaml]
 ----
-      - name: Build a container image with Crane
+      - name: Copy a remote image with Crane
         uses: cloudbees-io/crane@v1
         with:
           src: <source registry>/<image name>:<source image tag>
