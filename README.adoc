@@ -1,48 +1,101 @@
-== Cloudbees action for copying a remote image from a source to a destination using crane
+= CloudBees action: Copy a remote image with Crane
 
-This action can be used to copy a remote image from a source to a destination using link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane] .
+Use this action to copy a remote image from a source to a destination with Crane, a tool for managing container images. You can also use Crane as a Docker image.
 
-=== Prerequisites
+== Prerequisites
 
-Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the docker registry.
+Before invoking the action, you must have a Docker config file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the Docker registry.
 
-The format of this JSON file is:
+Use xref:credentials:configure-oci-credentials.adoc[the OCI credentials configuration action] to generate a Docker config file, as in the following example.
 
-`{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}` 
-
-where the `auth` field is base64 encoded.
-
-If your source and destination registries are different, then you need to include the credential for both registries in the config file.
-
-The format of the JSON file in that case would be:
-
-`{"auths": {
-        "<source registry>": {
-            "username": "<username>",
-            "password": "<password>",
-            "auth": "<username>:<password>"
-        },
-        "<destination registry>": {
-            "username": "<username>",
-            "password": "<password>",
-            "auth": "<username>:<password>"
-        }
-    }
-}`
-
-=== Usage
+In your YAML file, add:
 
 [source,yaml]
 ----
-- uses: cloudbees-io/crane@v1
-  with:
-    # The source image to copy (Required)
-    src: <source registry>/<image name>:<source image tag>
-    # The destination image (Required)
-    destination: <destination registry>/<image name>:<destination image tag>
-    # Specifies the platform in the form os/arch[/variant][:osversion]  (Optional)
-    platform: linux/amd64
-    # Skip source and destination image validation. Default: true (Optional)
-    skip-image-validation: 'false'
-      
+
+      - id: dockerconfig
+        name: Configure container registry credentials
+        uses: cloudbees-io/configure-oci-credentials@v1
+        with:
+          registry: ${{ vars.STAGING_DOCKER_REGISTRY }}
+          username: ${{ secrets.STAGING_DOCKER_USERNAME }}
+          password: ${{ secrets.STAGING_DOCKER_PASSWORD }}
+
 ----
+
+The Docker config file must be formatted in JSON, as follows:
+
+[source,json,role="novalidate"]
+----
+{
+	"auths": {
+		"<registry host>": {
+			"username": "<username>",
+			"password": "<password>",
+			"auth": "<username>:<password>"
+		}
+	}
+}
+----
+
+NOTE: The `+"auth":"<username>:<password>"+` field must be base64-encoded.
+
+== Inputs
+
+[cols="2a,1a,1a,3a",options="header"]
+.Input details
+|===
+
+| Input name
+| Data type
+| Required?
+| Description
+
+| `src`
+| String
+| Yes
+| The source image to copy.
+
+| `destination`
+| String
+| Yes
+| The destination image.
+
+| `platform`
+| String
+| No
+| Specifies the platform in the format `os/arch[/variant][:osversion]`
+
+| `skip-image-validation`
+| String
+| No
+| Default is `true`. When `true`, the source and destination image validation is skipped.
+|===
+
+== Usage example
+
+In your YAML file, add:
+
+[source,yaml]
+----
+      - name: Build a container image with Crane
+        uses: cloudbees-io/crane@v1
+        with:
+          src: <source registry>/<image name>:<source image tag>
+          destination: <destination registry>/<image name>:<destination image tag>
+          platform: linux/amd64
+          skip-image-validation: 'false'
+
+----
+
+
+== License
+
+This code is made available under the 
+link:https://opensource.org/license/mit/[MIT license].
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform-actions/latest/[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
+
