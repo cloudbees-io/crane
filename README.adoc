@@ -1,48 +1,75 @@
-== Cloudbees action for copying a remote image from a source to a destination using crane
+= CloudBees action: Copy a remote image with Crane
 
-This action can be used to copy a remote image from a source to a destination using link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane] .
+Use this action to copy a remote image from a source to a destination with link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane], a tool for managing container images.
 
-=== Prerequisites
+== Prerequisites
 
-Before invoking the action, make sure to have the docker config JSON file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the docker registry.
+Before invoking the action, you must have a Docker config file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the Docker registry.
 
-The format of this JSON file is:
+Use either of the below actions to generate a Docker config file.
 
-`{"auths":{"<registry host>":{"username":"<username>","password":"<password>","auth":"<username>:<password>"}}}` 
+* link:https://github.com/cloudbees-io/configure-oci-credentials[The OCI credentials configuration action].
 
-where the `auth` field is base64 encoded.
+* link:https://github.com/cloudbees-io/configure-ecr-credentials[The ECR credentials configuration action], for authenticating to an AWS ECR registry. 
 
-If your source and destination registries are different, then you need to include the credential for both registries in the config file.
+NOTE: If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry authentication action separately for those registries before invoking the crane action.
 
-The format of the JSON file in that case would be:
+== Inputs
 
-`{"auths": {
-        "<source registry>": {
-            "username": "<username>",
-            "password": "<password>",
-            "auth": "<username>:<password>"
-        },
-        "<destination registry>": {
-            "username": "<username>",
-            "password": "<password>",
-            "auth": "<username>:<password>"
-        }
-    }
-}`
+[cols="2a,1a,1a,3a",options="header"]
+.Input details
+|===
 
-=== Usage
+| Input name
+| Data type
+| Required?
+| Description
+
+| `src`
+| String
+| Yes
+| The source image to copy.
+
+| `destination`
+| String
+| Yes
+| The destination image.
+
+| `platform`
+| String
+| No
+| Specifies the platform in the format `os/arch[/variant][:osversion]`
+
+| `skip-image-validation`
+| String
+| No
+| Default is `true`. When `true`, the source and destination image validation is skipped.
+|===
+
+== Usage example
+
+In your YAML file, add:
 
 [source,yaml]
 ----
-- uses: cloudbees-io/crane@v1
-  with:
-    # The source image to copy (Required)
-    src: <source registry>/<image name>:<source image tag>
-    # The destination image (Required)
-    destination: <destination registry>/<image name>:<destination image tag>
-    # Specifies the platform in the form os/arch[/variant][:osversion]  (Optional)
-    platform: linux/amd64
-    # Skip source and destination image validation. Default: true (Optional)
-    skip-image-validation: 'false'
-      
+      - name: Copy a remote image with Crane
+        uses: cloudbees-io/crane@v1
+        with:
+          src: <source registry>/<image name>:<source image tag>
+          destination: <destination registry>/<image name>:<destination image tag>
+          platform: linux/amd64
+          skip-image-validation: 'false'
+
 ----
+
+
+== License
+
+This code is made available under the 
+link:https://opensource.org/license/mit/[MIT license].
+
+== References
+
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform-actions/latest/[using actions in CloudBees workflows].
+* Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
+
