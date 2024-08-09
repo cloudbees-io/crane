@@ -16,6 +16,11 @@ inputs:
   skip-image-validation:
     description: 'Skip source and destination image validation'
     default: "true"
+  registry-configuration:
+    description: >
+      CloudBees registry configuration file containing the registries to use for loading images.
+      By default it uses the file containing the registries configured under 'Integrations' in the CloudBees platform.
+    default: ${{ cloudbees.registries }}
 
 outputs:
   digest:
@@ -29,35 +34,92 @@ outputs:
 runs:
   using: composite
   steps:
+    - id: resolveimages
+      if: ${{ inputs.registry-configuration != '' }}
+      name: Resolve source image
+      uses: docker://public.ecr.aws/l7o7z1g8/services/registry-config:0.0.22
+      with:
+        entrypoint: /registry-config
+        args: --config="${{ inputs.registry-configuration }}" resolve "${{ inputs.src }}" resolved-image.file
+
     - id: cranecopy
       name: Copy a remote image from a given source to a destination
       uses: docker://gcr.io/go-containerregistry/crane:debug
       run: |
-        set -euo pipefail
-
-        if [ "$SKIP_IMAGE_VALIDATION" == false ]; then
-          echo "Validating source image ${{ inputs.src }}"
-          crane validate --remote ${{ inputs.src }} --platform ${{ inputs.platform }}
+        set -uo pipefail
+        
+        dest_image=${{ inputs.destination }}
+        if [[ "${dest_image}" == *@sha256:* ]]; then
+          echo "The destination image reference is invalid: contains a digest"
+          exit 1
         fi
 
-        echo "Copying source image ${{ inputs.src }} to destination ${{ inputs.destination }}"
-        crane copy ${{ inputs.src }} ${{ inputs.destination }} --platform ${{ inputs.platform }}
+        if [ ! -e resolved-image.file ]; then
+          echo '${{ inputs.src }}' > resolved-image.file
+        fi
+
+        set +e
+        
+        image_with_digest=
+        while IFS= read -r line; do
+          if [ "$SKIP_IMAGE_VALIDATION" == false ]; then
+            echo "Validating source image ${line}"
+            crane validate --remote ${line} --platform ${{ inputs.platform }}
+
+            if [ $? -ne 0 ]; then
+              echo "Failed to validate image: $line"
+              continue
+            fi
+          fi
+
+          echo "Getting image digest of source image ${line}"
+          image_with_digest=$(crane digest ${line} --full-ref --platform ${{ inputs.platform }})
+        
+          if [ $? -ne 0 ]; then
+            echo "Failed get image digest: $line"
+            image_with_digest=
+            continue
+          fi
+
+          echo "Found source image to copy: ${image_with_digest}"
+
+          echo "Copying source image ${image_with_digest} to destination ${{ inputs.destination }}"
+          crane copy ${image_with_digest} ${{ inputs.destination }} --platform ${{ inputs.platform }}
+
+          if [ $? -ne 0 ]; then
+            echo "Failed to copy image: $line"
+            image_with_digest=
+            continue
+          fi
+          break
+        done < "resolved-image.file"
+        
+        set -e
+
+        rm resolved-image.file
+
+        if [ -z "${image_with_digest}" ]; then
+          exit 1
+        fi
+
+        source_digest="${image_with_digest##*@}"
+     
+        if [[ "${dest_image}" == *:* ]]; then
+            dest_with_digest="${dest_image%%:*}@$source_digest"
+        else
+            dest_with_digest="$dest_image@$source_digest"
+        fi
 
         if [ "$SKIP_IMAGE_VALIDATION" == false ]; then
           echo "Validating destination image ${{ inputs.destination }}"
-          crane validate --remote ${{ inputs.destination }} --platform ${{ inputs.platform }}
+          crane validate --remote ${dest_with_digest} --platform ${{ inputs.platform }}
         fi
 
-        echo "Getting image digest of source image ${{ inputs.src }}"
-        crane digest ${{ inputs.src }} --full-ref --platform ${{ inputs.platform }}
+        echo "Destination image: ${dest_with_digest}"
+        echo "Destination digest: ${source_digest}"
 
-        # Capture digest of destination image and also log to console
-        exec 5>&1
-        echo "Getting image digest of destination image ${{ inputs.destination }}"
-        image=$(crane digest ${{ inputs.destination }} --full-ref --platform ${{ inputs.platform }} | tee /dev/fd/5)
-        digest=$(crane digest ${{ inputs.destination }} --platform ${{ inputs.platform }})
-        printf %s "$digest" > $CLOUDBEES_OUTPUTS/digest
-        printf %s "$image" > $CLOUDBEES_OUTPUTS/image
+        printf %s "${source_digest}" > $CLOUDBEES_OUTPUTS/digest
+        printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
 
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
