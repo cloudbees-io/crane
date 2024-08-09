@@ -94,9 +94,9 @@ runs:
           break
         done < "resolved-image.file"
         
-        rm resolved-image.file
-
         set -e
+
+        rm resolved-image.file
         
         if [ -z "${image_with_digest}" ]; then
           exit 1
