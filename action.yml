@@ -97,15 +97,15 @@ runs:
         set -e
 
         rm resolved-image.file
-        
+
         if [ -z "${image_with_digest}" ]; then
           exit 1
         fi
 
         source_digest="${image_with_digest##*@}"
      
-        if [[ "${dest_image}" == *@* ]]; then
-            dest_with_digest="${dest_image%%@*}@$source_digest"
+        if [[ "${dest_image}" == *:* ]]; then
+            dest_with_digest="${dest_image%%:*}@$source_digest"
         else
             dest_with_digest="$dest_image@$source_digest"
         fi
