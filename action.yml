@@ -121,6 +121,26 @@ runs:
         printf %s "${source_digest}" > $CLOUDBEES_OUTPUTS/digest
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
 
+        # Make Platform API call
+        echo ${dest_with_digest}
+        echo ${{ inputs.destination }}
+        echo ${{ inputs.platform }}
+
+        # response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"helm"}') || command_failed=1
+        # # Check curl exit code
+        # if [ ${command_failed:-0} -eq 1 ];
+        # then
+        #   echo "Platform API call failed with error '$response'"
+        #   exit 1
+        # else
+        #   echo "Artifact details pushed to platform successfully"
+        # fi  
+
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
+        DESTINATION: ${{ inputs.destination }}
+        URL: ${{ cloudbees.api.url }}
+        API_TOKEN: ${{ cloudbees.api.token }}
+        RUN_ID: ${{ cloudbees.run_id }}
+        RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
