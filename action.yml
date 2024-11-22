@@ -122,6 +122,7 @@ runs:
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
 
         # Make Platform API call
+        echo "Required data test"
         echo ${dest_with_digest}
         echo ${{ inputs.destination }}
         echo ${{ inputs.platform }}
