@@ -126,10 +126,11 @@ runs:
         echo "Required data test"
         image_name=$(echo "$dest_image" | awk -F ':' '{print $1}')
         image_tag=$(echo "$dest_image" | awk -F ':' '{print $2}')
+        echo '${{ inputs.src }}'
+        echo ${{ inputs.destination }}
         echo $dest_image
         echo $image_name
         echo $image_tag
-        echo ${{ inputs.destination }}
 
         # response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"helm"}') || command_failed=1
         # # Check curl exit code
