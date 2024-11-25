@@ -128,6 +128,8 @@ runs:
         CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $2}')
         echo $CHART_NAME
         echo $CHART_VERSION
+        echo ${{ inputs.destination }}
+        echo $DESTINATION
 
         # response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
         # # Check curl exit code
