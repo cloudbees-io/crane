@@ -124,10 +124,10 @@ runs:
         # Make Platform API call
         echo ''
         echo "Required data test"
-        CHART_NAME=$(echo "$dest_image" | cut -d '/' -f 2 | cut -d ':' -f 1)
-        CHART_NAME=$(echo "$dest_image" | awk -F ':' '{print $2}')
-        echo $image_name
-        echo $image_tag
+        CHART_NAME=$(echo "$DESTINATION" | cut -d '/' -f 2 | cut -d ':' -f 1)
+        CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $2}')
+        echo $CHART_NAME
+        echo $CHART_VERSION
 
         # response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
         # # Check curl exit code
