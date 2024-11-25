@@ -121,7 +121,8 @@ runs:
         printf %s "${source_digest}" > $CLOUDBEES_OUTPUTS/digest
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
 
-        dnf install curl
+        apk update
+        apk add curl
 
         CHART_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
         CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
