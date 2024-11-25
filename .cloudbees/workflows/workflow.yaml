@@ -48,9 +48,6 @@ jobs:
     - name: Test Action output maximum
       uses: docker://gcr.io/go-containerregistry/crane:debug
       run: |
-        FROM node:alpine
-        apk update; apk add curl
-
         SRC_DIGEST=$(crane digest ubuntu:latest --platform linux/amd64)
         DEST_DIGEST=$(crane digest ${{ vars.staging_image_registry }}/ubuntu:dst-test --platform linux/amd64)
 
