@@ -124,7 +124,7 @@ runs:
         # Make Platform API call
         echo ''
         echo "Required data test"
-        CHART_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}'
+        CHART_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
         CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
         echo $CHART_NAME
         echo $CHART_VERSION
