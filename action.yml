@@ -121,21 +121,6 @@ runs:
         printf %s "${source_digest}" > $CLOUDBEES_OUTPUTS/digest
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
 
-        CHART_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
-        CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
-
-        # Publish build artifact
-        response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
-        
-        # Check curl exit code
-        if [ ${command_failed:-0} -eq 1 ];
-        then
-          echo "Publish build artifact failed with error '$response'"
-          exit 1
-        else
-          echo "Build artifact published successfully"
-        fi
-
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
