@@ -124,3 +124,26 @@ runs:
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
+        
+    - id: publishbuildartifact
+      name: Publish build artifact
+      uses: docker://alpine/curl:latest
+      run: |
+        IMAGE_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
+        IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
+        # Publish build artifact
+        response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$IMAGE_NAME"'","version":"'"$IMAGE_TAG"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
+        # Check curl exit code
+        if [ ${command_failed:-0} -eq 1 ];
+        then
+          echo "Publish build artifact failed with error '$response'"
+          exit 1
+        else
+          echo "Build artifact published successfully"
+        fi
+      env:
+        DESTINATION: ${{ inputs.destination }}
+        URL: ${{ cloudbees.api.url }}
+        API_TOKEN: ${{ cloudbees.api.token }}
+        RUN_ID: ${{ cloudbees.run_id }}
+        RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
