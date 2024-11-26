@@ -129,10 +129,10 @@ runs:
       name: Publish build artifact
       uses: docker://alpine/curl:latest
       run: |
-        CHART_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
-        CHART_VERSION=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
+        IMAGE_NAME=$(echo "$DESTINATION" | awk -F '[:/]' '{print $(NF-1)}')
+        IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
         # Publish build artifact
-        response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$CHART_NAME"'","version":"'"$CHART_VERSION"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
+        response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$IMAGE_NAME"'","version":"'"$IMAGE_TAG"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
         # Check curl exit code
         if [ ${command_failed:-0} -eq 1 ];
         then
