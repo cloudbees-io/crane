@@ -72,4 +72,3 @@ link:https://opensource.org/license/mit/[MIT license].
 
 * Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform-actions/latest/[using actions in CloudBees workflows].
 * Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
-
