@@ -132,6 +132,9 @@ runs:
         # IMAGE_NAME=$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}' | awk -F: '{print $1}')
         IMAGE_NAME=$(echo "$DESTINATION" | awk -F/ '{print $2}')
         IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
+        echo 'Print outputs'
+        echo ${{ steps.cranecopy.outputs.digest }}
+        echo ${{ steps.cranecopy.outputs.image }}
         # Publish build artifact
         response=$(curl --fail-with-body  -X 'POST' "$URL/v2/workflows/runs/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary '{"runId":"'"$RUN_ID"'","runAttempt":'$RUN_ATTEMPT',"name":"'"$IMAGE_NAME"'","version":"'"$IMAGE_TAG"'","url":"'"$DESTINATION"'","type":"docker"}') || command_failed=1
         # Check curl exit code
