@@ -129,6 +129,7 @@ runs:
       name: Publish build artifact
       uses: docker://alpine/curl:latest
       run: |
+        set -x
         IMAGE_NAME=$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}')
         IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
         IMAGE_DIGEST=${{ steps.cranecopy.outputs.digest }}
