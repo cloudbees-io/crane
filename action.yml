@@ -137,8 +137,7 @@ runs:
         # Check curl exit code
         if [ ${command_failed:-0} -eq 1 ];
         then
-          echo "Publish build artifact failed with error '$response'"
-          exit 1
+          echo "WARN: Publish build artifact failed with error '$response'"
         else
           echo "Build artifact published successfully"
         fi
