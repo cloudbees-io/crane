@@ -1,6 +1,6 @@
 = CloudBees action: Copy a remote image with Crane
 
-Use this action to copy a remote image from a source to a destination with link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane], a tool for managing container images.
+Use this action to copy a remote image from a source to a destination with link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane], a tool for managing container images. This action also reports artifact related data to the workflow run for artifact traceability purposes.
 
 == Prerequisites
 
