@@ -1,6 +1,7 @@
-= CloudBees action: Copy a remote image with Crane
+= CloudBees action: Copy Docker images with Crane
 
-Use this action to copy a remote image from a source to a destination with link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane], a tool for managing container images. This action also reports artifact related data to the workflow run for artifact traceability purposes.
+Use this action to copy a remote image from a source to a Docker destination with Crane, a tool for managing container images. 
+This action also reports artifact-related data to the workflow run for artifact traceability purposes.
 
 == Prerequisites
 
@@ -12,7 +13,7 @@ Use either of the below actions to generate a Docker config file.
 
 * link:https://github.com/cloudbees-io/configure-ecr-credentials[The ECR credentials configuration action], for authenticating to an AWS ECR registry. 
 
-NOTE: If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry authentication action separately for those registries before invoking the crane action.
+NOTE: If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry authentication action separately for those registries before invoking the Crane action.
 
 == Inputs
 
@@ -25,15 +26,15 @@ NOTE: If your source and destination registries are different, you must authenti
 | Required?
 | Description
 
-| `src`
-| String
-| Yes
-| The source image to copy.
-
 | `destination`
 | String
 | Yes
 | The destination image.
+
+| `src`
+| String
+| Yes
+| The source image to copy.
 
 | `platform`
 | String
