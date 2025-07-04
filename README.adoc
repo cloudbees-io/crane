@@ -46,6 +46,30 @@ NOTE: If your source and destination registries are different, you must authenti
 | Default is `true`. When `true`, the source and destination image validation is skipped.
 |===
 
+== Outputs
+
+[cols="2a,2a,5a",options="header"]
+.Output details
+|===
+
+| Output name
+| Data type
+| Description
+
+| `digest`
+| String
+| Image digest of the destination image
+
+| `image`
+| String
+| Image reference of the destination image, including the image digest.
+
+| `artifact-id`
+| String
+| The unique identifier of the artifact.
+
+|===
+
 == Usage example
 
 In your YAML file, add:
