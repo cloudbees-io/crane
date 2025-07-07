@@ -38,7 +38,7 @@ jobs:
 
     - id: actionrunmax
       name: Run Action with all inputs specified
-      uses: ./
+      uses: cloudbees-io/crane@dev-test
       with:
         src: ubuntu:latest
         destination: ${{ vars.staging_image_registry }}/ubuntu:dst-test
@@ -56,7 +56,7 @@ jobs:
 
     - id: actionrunrequired
       name: Run Action with only required inputs specified
-      uses: ./
+      uses: cloudbees-io/crane@dev-test
       with:
         src: alpine:latest
         destination: ${{ vars.staging_image_registry }}/alpine:dst-test
@@ -72,7 +72,7 @@ jobs:
 
     - id: promotecharts
       name: Run action to promote helm charts
-      uses: ./
+      uses: cloudbees-io/crane@dev-test
       with:
         src: ghcr.io/nginxinc/charts/nginx-ingress:1.0.2
         destination: ${{ vars.staging_chart_registry }}/nginx-ingress:1.0.2
