@@ -156,8 +156,8 @@ runs:
         API_TOKEN: ${{ cloudbees.api.token }}
         RUN_ID: ${{ cloudbees.run_id }}
         RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
-      - uses: docker://golang:1.20.3-alpine3.17
-        name: echo
-        shell: sh
-        run: |
-          echo "artifactIds value: ${{ steps.publishbuildartifact.outputs.artifact-ids }}"
+    - uses: docker://golang:1.20.3-alpine3.17
+      name: echo
+      shell: sh
+      run: |
+        echo "artifactIds value: ${{ steps.publishbuildartifact.outputs.artifact-ids }}"
