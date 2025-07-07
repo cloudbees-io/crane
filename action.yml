@@ -160,4 +160,4 @@ runs:
       name: echo
       shell: sh
       run: |
-        echo "artifactIds value: ${{ steps.publishbuildartifact.outputs.artifact-ids }}"
+        echo "artifactIds value: ${{ steps.publishbuildartifact.outputs.artifact-id }}"
