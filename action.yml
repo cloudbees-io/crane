@@ -30,6 +30,9 @@ outputs:
     value: ${{ steps.cranecopy.outputs.image }}
     description: |
       Image reference of the destination image, including the image digest.
+  artifact-id:
+    value: ${{ steps.publishbuildartifact.outputs.artifact-id }}
+    description: "The unique identifier of the artifact."
 
 runs:
   using: composite
@@ -140,6 +143,12 @@ runs:
           echo "WARN: Publish build artifact failed with error '$response'"
         else
           echo "Build artifact published successfully"
+          
+          # Extract the artifactId
+          id=$(echo "$response" | grep -o '"id": *"[^"]*"' | sed 's/.*"id": *"\([^"]*\)".*/\1/')
+        
+          # Set it as an output
+          printf %s "$id" > $CLOUDBEES_OUTPUTS/artifact-id
         fi
       env:
         DESTINATION: ${{ inputs.destination }}
