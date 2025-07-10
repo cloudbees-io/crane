@@ -171,7 +171,7 @@ jobs:
         role-to-assume: ${{ vars.MY_ROLE }}
         role-duration-seconds: "3600"
     - name: Run Crane action
-    - id: run-crane
+      id: run-crane
       uses: cloudbees-io/crane@v1
       with:
         src: ubuntu:latest
