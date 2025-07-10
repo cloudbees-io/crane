@@ -52,8 +52,6 @@ Invoke the Docker registry authentication action separately for those registries
 
 == Outputs
 
-== Outputs
-
 [cols="2a,1a,3a",options="header"]
 .Output details
 |===
@@ -72,6 +70,7 @@ Invoke the Docker registry authentication action separately for those registries
 | `image`
 | String
 | Image reference of the destination image, including the image digest.
+|===
 
 == Usage examples
 
