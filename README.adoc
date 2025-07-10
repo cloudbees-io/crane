@@ -1,18 +1,22 @@
 = CloudBees action: Copy a remote image with Crane
 
-Use this action to copy a remote image from a source to a destination with link:https://github.com/google/go-containerregistry/blob/main/cmd/crane/doc/crane.md[crane], a tool for managing container images. This action also reports artifact related data to the workflow run for artifact traceability purposes.
+Use this action to copy a remote image from a source to a destination with Crane, a tool for managing container images.
+To copy Docker images with this action, you must have a <<docker,Docker configuration file>>.
+This action also reports artifact-related data to the workflow run for artifact traceability purposes.
 
-== Prerequisites
+[#docker]
+== Prerequisites for copying a Docker image
 
 Before invoking the action, you must have a Docker config file in the `${HOME}/.docker/config.json` path. This file is used to authenticate with the Docker registry.
 
 Use either of the below actions to generate a Docker config file.
 
-* link:https://github.com/cloudbees-io/configure-oci-credentials[The OCI credentials configuration action].
+* link:https://github.com/cloudbees-io/configure-oci-credentials[The Open Container Initiative (OCI) credentials configuration action], for authenticating to an OCI registry.
 
-* link:https://github.com/cloudbees-io/configure-ecr-credentials[The ECR credentials configuration action], for authenticating to an AWS ECR registry. 
+* link:https://github.com/cloudbees-io/configure-ecr-credentials[The Amazon Elastic Container Registry (ECR) credentials configuration action], for authenticating to an ECR registry. 
 
-NOTE: If your source and destination registries are different, you must authenticate to both registries. Invoke the Docker registry authentication action separately for those registries before invoking the crane action.
+NOTE: If your source and destination registries are different, you must authenticate to both registries. 
+Invoke the Docker registry authentication action separately for those registries before invoking the Crane action.
 
 == Inputs
 
@@ -48,44 +52,142 @@ NOTE: If your source and destination registries are different, you must authenti
 
 == Outputs
 
-[cols="2a,2a,5a",options="header"]
+== Outputs
+
+[cols="2a,1a,3a",options="header"]
 .Output details
 |===
-
 | Output name
 | Data type
 | Description
 
+| `artifact-id`
+| String
+| The unique identifier of the artifact reported to the CloudBees platform.
+
 | `digest`
 | String
-| Image digest of the destination image
+| Image digest of the destination image.
 
 | `image`
 | String
 | Image reference of the destination image, including the image digest.
 
-| `artifact-id`
-| String
-| The unique identifier of the artifact.
+== Usage examples
 
-|===
+=== Basic example
 
-== Usage example
-
-In your YAML file, add:
+The following is a basic usage example for this action:
 
 [source,yaml]
 ----
-      - name: Copy a remote image with Crane
+      - name: Copy remote image with Crane
         uses: cloudbees-io/crane@v1
         with:
-          src: <source registry>/<image name>:<source image tag>
-          destination: <destination registry>/<image name>:<destination image tag>
-          platform: linux/amd64
-          skip-image-validation: 'false'
+          src: my-source-registry/source-image-name:source-tag-name
+          destination: my-destination-registry/destination-image-name:destination-tag-name
 
 ----
 
+=== Using optional inputs
+
+The following example specifies optional inputs:
+
+[source,yaml]
+----
+      - name: Copy remote image with Crane
+        uses: cloudbees-io/crane@v1
+        with:
+          src: my-source-registry/source-image:source-tag
+          destination: my-destination-registry/destination-image:destination-tag
+          platform: linux/arm/v7
+          skip-image-validation: false
+
+----
+
+
+=== Using the action output
+
+Access the output values in downstream steps using the `outputs` xref:dsl-syntax:contexts.adoc[context].
+In the following example, a Helm chart is copied using the Crane action, and output values are displayed.
+
+[source,yaml,role="default-expanded"]
+----
+      - name: Run Crane action
+        id: promotecharts
+        uses: cloudbees-io/crane@v1
+        with:
+          src: ghcr.io/nginxinc/charts/nginx-ingress:1.0.2
+          destination: ${{ vars.my_chart_registry }}/nginx-ingress:1.0.2
+      - name: Crane output
+        uses: docker://gcr.io/go-containerregistry/crane:debug
+        run: |
+          echo "artifact ID for ${{ vars.my_chart_registry }}/nginx-ingress:1.0.2: ${{ steps.promotecharts.outputs.artifact-id }}"
+          echo "digest for ${{ vars.my_chart_registry }}/nginx-ingress:1.0.2: ${{ steps.promotecharts.outputs.digest }}"
+          echo "image for ${{ vars.my_chart_registry }}/nginx-ingress:1.0.2: ${{ steps.promotecharts.outputs.image }}"
+----
+
+
+=== Full workflow example
+
+The following workflow example:
+
+* Checks out source code from a repository.
+* Configures credentials.
+* Gets the digest of the official Ubuntu image, and compares it to the output `digest` value.
+
+[source,yaml,role="default-expanded"]
+----
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Action test
+
+on:
+  push:
+    branches:
+    - '**'
+
+permissions:
+  scm-token-own: read
+  scm-token-org: read
+  id-token: write
+
+jobs:
+  docker-build:
+    steps:
+    - name: Check out source code
+      uses: cloudbees-io/checkout@v1
+      with:
+        repository: my-name/my-repo-name
+    - name: Configure container registry credentials
+      uses: cloudbees-io/configure-oci-credentials@v1
+      with:
+        registry: docker.io
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Log in to AWS
+      uses: cloudbees-io/configure-aws-credentials@v1
+      with:
+        aws-region: us-east-1
+        role-to-assume: ${{ vars.MY_ROLE }}
+        role-duration-seconds: "3600"
+    - name: Run Crane action
+    - id: run-crane
+      uses: cloudbees-io/crane@v1
+      with:
+        src: ubuntu:latest
+        destination: ${{ vars.my_image_registry }}/ubuntu:test
+        platform: linux/amd64
+        skip-image-validation: 'false'
+    - name: Test Crane action output
+      uses: docker://gcr.io/go-containerregistry/crane:debug
+      run: |
+        SRC_DIGEST=$(crane digest ubuntu:latest --platform linux/amd64)
+        DEST_DIGEST=$(crane digest ${{ vars.my_image_registry }}/ubuntu:test --platform linux/amd64)
+        [ "$DEST_DIGEST" = '${{ steps.run-crane.outputs.digest }}' ]
+        [ "$SRC_DIGEST" = "$DEST_DIGEST" ]
+
+----
 
 == License
 
