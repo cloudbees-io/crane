@@ -133,7 +133,8 @@ The following workflow example:
 
 * Checks out source code from a repository.
 * Configures credentials.
-* Gets the digest of the official Ubuntu image, and compares it to the output `digest` value.
+* Copies an official Ubuntu image with the Crane action.
+* Gets the digest of the official Ubuntu image, and compares it to the output `digest` value of the destination image.
 
 [source,yaml,role="default-expanded"]
 ----
