@@ -81,6 +81,7 @@ The following is a basic usage example for this action:
 [source,yaml]
 ----
       - name: Copy remote image with Crane
+        id: copy-image
         uses: cloudbees-io/crane@v1
         with:
           src: my-source-registry/source-image-name:source-tag-name
@@ -95,6 +96,7 @@ The following example specifies optional inputs:
 [source,yaml]
 ----
       - name: Copy remote image with Crane
+        id: copy-image
         uses: cloudbees-io/crane@v1
         with:
           src: my-source-registry/source-image:source-tag
