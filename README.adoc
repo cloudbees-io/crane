@@ -2,7 +2,12 @@
 
 Use this action to copy a remote image from a source to a destination with Crane, a tool for managing container images.
 To copy Docker images with this action, you must have a <<docker,Docker configuration file>>.
-This action also reports artifact-related data to the workflow run for artifact traceability purposes.
+
+== Automatic artifact data reporting
+
+This action link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/artifacts[reports artifact-related data] to the workflow run for artifact traceability purposes.
+
+Do *not* include the link:https://github.com/cloudbees-io/register-build-artifact[`register-build-artifact` action] in the same job, as the resulting run would register duplicate artifact entries to CloudBees platform.
 
 [#docker]
 == Prerequisites for copying a Docker image
@@ -61,7 +66,7 @@ Invoke the Docker registry authentication action separately for those registries
 
 | `artifact-id`
 | String
-| The unique identifier of the artifact reported to the CloudBees platform.
+| The unique identifier of the artifact reported to CloudBees platform.
 
 | `digest`
 | String
