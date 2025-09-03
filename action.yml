@@ -40,7 +40,7 @@ runs:
     - id: resolveimages
       if: ${{ inputs.registry-configuration != '' }}
       name: Resolve source image
-      uses: docker://public.ecr.aws/l7o7z1g8/services/registry-config:0.0.22
+      uses: docker://public.ecr.aws/l7o7z1g8/actions/registry-config:0.0.32
       with:
         entrypoint: /registry-config
         args: --config="${{ inputs.registry-configuration }}" resolve "${{ inputs.src }}" resolved-image.file
