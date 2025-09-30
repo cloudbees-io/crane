@@ -53,6 +53,18 @@ Invoke the Docker registry authentication action separately for those registries
 | String
 | No
 | Default is `true`. When `true`, the source and destination image validation is skipped.
+
+| `artifact-name`
+| String
+| No
+| The name of the artifact, used when registering the build artifact in CloudBees platform.
+By default the destination image name is used without the registry and tag parts.
+
+|`component-id`
+| String
+| No
+| The ID of the component to which the artifact belongs.
+If not provided, the artifact will be registered with the component id of the current workflow run.
 |===
 
 == Outputs
