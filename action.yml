@@ -152,7 +152,7 @@ runs:
         IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
         IMAGE_DIGEST=${{ steps.cranecopy.outputs.digest }}
               
-        json_payload = '{
+        json_payload='{
           "runId":"'"$RUN_ID"'",
           "runAttempt":'$RUN_ATTEMPT',
           "name":"'"$IMAGE_NAME"'",
