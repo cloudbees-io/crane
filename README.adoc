@@ -54,6 +54,12 @@ Invoke the Docker registry authentication action separately for those registries
 | No
 | Default is `true`. When `true`, the source and destination image validation is skipped.
 
+| `registry-configuration`
+| String
+| No
+| CloudBees registry configuration file containing the registries to use for loading images.
+If not provided, the file containing the registries configured under 'Integrations' in the CloudBees platform is used. Default is ${{ cloudbees.registries }}.
+
 | `artifact-name`
 | String
 | No
@@ -63,8 +69,7 @@ By default the destination image name is used without the registry and tag parts
 |`component-id`
 | String
 | No
-| The ID of the component to which the artifact belongs.
-If not provided, the artifact will be registered with the component id of the current workflow run.
+| The link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/organizations-components/components#component-id[ID of the component] associated with the artifact. If not provided, the artifact is registered with the component of the current workflow run. Default is `${{ cloudbees.component.id }}
 |===
 
 == Outputs
