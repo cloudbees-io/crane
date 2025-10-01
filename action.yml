@@ -25,7 +25,6 @@ inputs:
     description: >
       The name of the artifact, used when registering the build artifact in CloudBees platform.
       By default the destination image name is used without the registry and tag parts.
-    default: ""
     required: false
   component-id:
     description: >
@@ -143,11 +142,11 @@ runs:
       name: Publish build artifact
       uses: docker://alpine/curl:latest
       run: |
-        if [ -z "$ARTIFACT_NAME" ]; then
+        if [ -n "$ARTIFACT_NAME" ] && [ $ARTIFACT_NAME != "" ]; then
+          IMAGE_NAME="$ARTIFACT_NAME"
+        else
           # Extract image name without registry and tag parts
           IMAGE_NAME=$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}' | awk -F: '{print $1}')
-        else
-          IMAGE_NAME="$ARTIFACT_NAME"
         fi
         IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
         IMAGE_DIGEST=${{ steps.cranecopy.outputs.digest }}
