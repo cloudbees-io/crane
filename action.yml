@@ -142,7 +142,7 @@ runs:
       name: Publish build artifact
       uses: docker://alpine/curl:latest
       run: |
-        if [ -n $ARTIFACT_NAME ]; then
+        if [ -n "${ARTIFACT_NAME}" ]; then
           IMAGE_NAME="$ARTIFACT_NAME"
         else
           # Extract image name without registry and tag parts
