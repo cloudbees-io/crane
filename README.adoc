@@ -34,32 +34,6 @@ Invoke the Docker registry authentication action separately for those registries
 | Required?
 | Description
 
-| `src`
-| String
-| Yes
-| The source image to copy.
-
-| `destination`
-| String
-| Yes
-| The destination image.
-
-| `platform`
-| String
-| No
-| Specifies the platform in the format `os/arch[/variant][:osversion]`
-
-| `skip-image-validation`
-| String
-| No
-| Default is `true`. When `true`, the source and destination image validation is skipped.
-
-| `registry-configuration`
-| String
-| No
-| CloudBees registry configuration file containing the registries to use for loading images.
-If not provided, the file containing the registries configured under 'Integrations' in the CloudBees platform is used. Default is `${{ cloudbees.registries }}`.
-
 | `artifact-name`
 | String
 | No
@@ -70,6 +44,32 @@ By default the destination image name is used without the registry and tag parts
 | String
 | No
 | The link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/organizations-components/components#component-id[ID of the component] associated with the artifact. If not provided, the artifact is registered with the component of the current workflow run. Default is `${{ cloudbees.component.id }}`.
+
+| `destination`
+| String
+| Yes
+| The destination image.
+
+| `platform`
+| String
+| No
+| Specifies the platform in the format `os/arch[/variant][:osversion]`.
+
+| `registry-configuration`
+| String
+| No
+| CloudBees registry configuration file containing the registries to use for loading images.
+If not provided, the file containing the registries configured under 'Integrations' in the CloudBees platform is used. Default is `${{ cloudbees.registries }}`.
+
+| `skip-image-validation`
+| String
+| No
+| Default is `true`. When `true`, the source and destination image validation is skipped.
+
+| `src`
+| String
+| Yes
+| The source image to copy.
 |===
 
 == Outputs
