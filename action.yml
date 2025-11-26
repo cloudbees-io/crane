@@ -41,7 +41,7 @@ outputs:
     description: |
       Image reference of the destination image, including the image digest.
   artifact-id:
-    value: ${{ steps.publishbuildartifact.outputs.artifact-id }}
+    value: ${{ steps.register-artifact.outputs.artifact-id }}
     description: "The unique identifier of the artifact."
   register-artifact-name:
     value: ${{ inputs.artifact-name }}
