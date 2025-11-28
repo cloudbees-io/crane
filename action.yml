@@ -143,6 +143,7 @@ runs:
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
+        DESTINATION: ${{ inputs.destination }}
 
     - id: register-artifact
       name: Register an artifact with the CloudBees Unify
