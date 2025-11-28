@@ -146,7 +146,7 @@ runs:
         DESTINATION: ${{ inputs.destination }}
 
     - id: register-artifact
-      name: Register an artifact with the CloudBees Unify
+      name: Register build artifact
       uses: cloudbees-io/register-build-artifact@v2
       with:
         name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['name'] }}
