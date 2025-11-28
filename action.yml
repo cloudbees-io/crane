@@ -151,8 +151,8 @@ runs:
         fieldName: "name"
         fieldVersion: "version"
       with:
-        name: ${{ fromJSON(steps.prepare-register-build-artifact.outputs.artifact-ids)[env.fieldName] }}
-        version: ${{ fromJSON(steps.prepare-register-build-artifact.outputs.artifact-ids)[env.fieldVersion] }}
+        name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)[env.fieldName] }}
+        version: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)[env.fieldVersion] }}
         url: ${{ inputs.destination }}
         digest: ${{ steps.cranecopy.outputs.digest }}
         component-id: ${{ inputs.component-id }}
