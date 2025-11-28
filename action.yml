@@ -148,8 +148,8 @@ runs:
       name: Register an artifact with the CloudBees Unify
       uses: cloudbees-io/register-build-artifact@v2
       with:
-        name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)["name"] }}
-        version: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)["version"] }}
+        name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['name'] }}
+        version: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['version'] }}
         url: ${{ inputs.destination }}
         digest: ${{ steps.cranecopy.outputs.digest }}
         component-id: ${{ inputs.component-id }}
