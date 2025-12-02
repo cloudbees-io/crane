@@ -43,10 +43,7 @@ outputs:
   artifact-id:
     value: ${{ steps.register-artifact.outputs.artifact-id }}
     description: "The unique identifier of the artifact."
-  artifact-metadata:
-    value: ${{ steps.cranecopy.outputs.artifact-metadata }}
-    description: "Metadata associated with the registered artifact."
-
+    
 runs:
   using: composite
   steps:
