@@ -135,8 +135,9 @@ runs:
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
         
         artifactName="${ARTIFACT_NAME:-$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}' | awk -F: '{print $1}')}"
-        artifactVersion=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')        
-        echo "{\"name\":\"${artifactName}\",\"version\":\"${artifactVersion}\"}" > $CLOUDBEES_OUTPUTS/artifact-metadata
+        artifactVersion=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
+        printf %s "${artifactName}" > $CLOUDBEES_OUTPUTS/artifact-name
+        printf %s "${artifactVersion}" > $CLOUDBEES_OUTPUTS/artifact-version
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
@@ -146,8 +147,8 @@ runs:
       name: Register build artifact
       uses: cloudbees-io/register-build-artifact@v2
       with:
-        name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['name'] }}
-        version: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['version'] }}
+        name: ${{ steps.cranecopy.outputs.artifact-name }}
+        version: ${{ steps.cranecopy.outputs.artifact-version }}
         url: ${{ inputs.destination }}
         digest: ${{ steps.cranecopy.outputs.digest }}
         component-id: ${{ inputs.component-id }}
