@@ -144,7 +144,7 @@ runs:
 
     - id: register-artifact
       name: Register build artifact
-      uses: cloudbees-io/register-build-artifact@v2
+      uses: cloudbees-io/register-build-artifact@CBP-26972
       with:
         name: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['name'] }}
         version: ${{ fromJSON(steps.cranecopy.outputs.artifact-metadata)['version'] }}
