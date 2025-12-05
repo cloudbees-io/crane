@@ -41,7 +41,7 @@ outputs:
     description: |
       Image reference of the destination image, including the image digest.
   artifact-id:
-    value: ${{ steps.publishbuildartifact.outputs.artifact-id }}
+    value: ${{ steps.register-artifact.outputs.artifact-id }}
     description: "The unique identifier of the artifact."
 
 runs:
@@ -133,55 +133,23 @@ runs:
 
         printf %s "${source_digest}" > $CLOUDBEES_OUTPUTS/digest
         printf %s "${dest_with_digest}" > $CLOUDBEES_OUTPUTS/image
-
+        
+        artifactName="${ARTIFACT_NAME:-$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}' | awk -F: '{print $1}')}"
+        artifactVersion=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
+        printf %s "${artifactName}" > $CLOUDBEES_OUTPUTS/artifact-name
+        printf %s "${artifactVersion}" > $CLOUDBEES_OUTPUTS/artifact-version
       env:
         SKIP_IMAGE_VALIDATION: ${{ inputs.skip-image-validation == 'true' && 'true' || 'false' }}
         PLATFORM: ${{ inputs.platform }}
-        
-    - id: publishbuildartifact
-      name: Publish build artifact
-      uses: docker://alpine/curl:latest
-      run: |
-        if [ -n "${ARTIFACT_NAME}" ]; then
-          IMAGE_NAME="$ARTIFACT_NAME"
-        else
-          # Extract image name without registry and tag parts
-          IMAGE_NAME=$(echo "$DESTINATION" | awk -F/ '{sub($1"/","");print}' | awk -F: '{print $1}')
-        fi
-        IMAGE_TAG=$(echo "$DESTINATION" | awk -F ':' '{print $NF}')
-        IMAGE_DIGEST=${{ steps.cranecopy.outputs.digest }}
-              
-        json_payload='{
-          "runId":"'"$RUN_ID"'",
-          "runAttempt":'$RUN_ATTEMPT',
-          "name":"'"$IMAGE_NAME"'",
-          "version":"'"$IMAGE_TAG"'",
-          "url":"'"$DESTINATION"'",
-          "type":"docker",
-          "digest":"'$IMAGE_DIGEST'",
-          "componentId":"'"$COMPONENT_ID"'"
-        }'
-        # Publish build artifact
-        response=$(curl --retry-delay 5 --retry 3 --retry-connrefused --fail-with-body  -X 'POST' "$URL/v3/artifactinfos" -H "Authorization: Bearer $API_TOKEN" -H 'Content-Type: application/json' --data-binary "$json_payload") || command_failed=1
-        # Check curl exit code
-        if [ ${command_failed:-0} -eq 1 ];
-        then
-          echo "ERROR: Publish build artifact failed with error '$response'"
-          exit 1
-        else
-          echo "Build artifact published successfully"
-          
-          # Extract the artifactId
-          id=$(echo "$response" | grep -o '"id": *"[^"]*"' | sed 's/.*"id": *"\([^"]*\)".*/\1/')
-        
-          # Set it as an output
-          printf %s "$id" > $CLOUDBEES_OUTPUTS/artifact-id
-        fi
-      env:
         DESTINATION: ${{ inputs.destination }}
-        URL: ${{ cloudbees.api.url }}
-        API_TOKEN: ${{ cloudbees.api.token }}
-        RUN_ID: ${{ cloudbees.run_id }}
-        RUN_ATTEMPT: ${{ cloudbees.run_attempt }}
-        ARTIFACT_NAME: ${{ inputs.artifact-name }}
-        COMPONENT_ID: ${{ inputs.component-id }}
+
+    - id: register-artifact
+      name: Register build artifact
+      uses: cloudbees-io/register-build-artifact@v2
+      with:
+        name: ${{ steps.cranecopy.outputs.artifact-name }}
+        version: ${{ steps.cranecopy.outputs.artifact-version }}
+        url: ${{ inputs.destination }}
+        digest: ${{ steps.cranecopy.outputs.digest }}
+        component-id: ${{ inputs.component-id }}
+        type: "docker"
